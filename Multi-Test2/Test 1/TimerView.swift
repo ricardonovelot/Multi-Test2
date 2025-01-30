@@ -59,12 +59,12 @@ struct TimerView: View {
                 // Oven type and temperature header
                 VStack(alignment: .leading, spacing: 8) {
                     Text("OVEN")
-                        .font(.subheadline)
+                        .disclaimer()
                         .foregroundColor(.gray)
                     
                     HStack {
                         Text("\(selectedMode) \(temperature)°")
-                            .font(.title)
+                            .h2()
                             .fontWeight(.bold)
                         
                         Spacer()
@@ -87,29 +87,35 @@ struct TimerView: View {
                     
                     VStack(spacing: 8) {
                         Text("\(temperature)°F")
+                            .h3()
                             .font(.system(size: 24))
                         
                         Text(timeString(from: remainingTime))
-                            .font(.system(size: 40, weight: .medium))
+                            .h1()
                         
-                        Button("EDIT COOK TIME") {
+                        Button {
                             // Set the picker values to current time before showing alert
                             selectedHours = Int(remainingTime) / 3600
                             selectedMinutes = Int(remainingTime) / 60 % 60
                             selectedSeconds = Int(remainingTime) % 60
                             showingTimeEditor = true
+                        } label: {
+                            Text("Edit Cook Time")
+                                .buttonText()
                         }
-                        .font(.caption)
+                        .buttonStyle(.plain)
                     }
                 }
                 .frame(width: 300, height: 300)
                 .padding()
                 
+                Spacer()
                 // Control buttons
                 Button(action: {
                     // Edit cooking logic to be implemented
                 }) {
-                    Text("EDIT COOKING")
+                    Text("Modify Temperature")
+                        .buttonText()
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.black)
@@ -120,7 +126,8 @@ struct TimerView: View {
                 Button(action: {
                     isTimerRunning.toggle()
                 }) {
-                    Text(isTimerRunning ? "TURN OFF" : "TURN ON")
+                    Text(isTimerRunning ? "End Cycle" : "TURN ON")
+                        .buttonText()
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(Color.white)
@@ -133,7 +140,7 @@ struct TimerView: View {
                 .padding(.horizontal)
                 Spacer()
             }
-            
+        }
             .alert("Test 1 Completed", isPresented: $showCompletionAlert) {
                 Button("OK") {
                     
@@ -203,7 +210,7 @@ struct TimerView: View {
             .onAppear {
                 isTimerRunning = true
             }
-        }
+        
     }
     
     // Helper function to convert seconds to formatted time string
@@ -216,5 +223,5 @@ struct TimerView: View {
 }
 
 #Preview {
-    TimerView(temperature: "350", cookTime: "01h 30m 00s", mode: "Bake", cycleComplete: "Hold Temperature")
+        TimerView(temperature: "350", cookTime: "01h 30m 00s", mode: "Bake", cycleComplete: "Hold Temperature")
 }

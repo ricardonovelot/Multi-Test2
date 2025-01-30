@@ -18,26 +18,19 @@ struct PrototypesView: View {
     @State private var showRestartAlert = false
     
     var body: some View {
-        NavigationStack{
-            List{
-                NavigationLink {
+            List {
+                NavigationLink("Test 1") {
                     ContentView()
                         .navigationBarBackButtonHidden(true)
-                } label: {
-                    Text("Test 1")
                 }
-                NavigationLink {
+                NavigationLink("Test 2") {
                     ContentView2()
                         .navigationBarBackButtonHidden(true)
-                } label: {
-                    Text("Test 2")
                 }
                 
-                NavigationLink {
+                NavigationLink("Test 3") {
                     ContentView3()
                         .navigationBarBackButtonHidden(true)
-                } label: {
-                    Text("Test 3")
                 }
                 
             }
@@ -73,12 +66,12 @@ struct PrototypesView: View {
                 Text("Select 'Test 1' to begin.")
             }
             
-        }
+        
     }
 }
 
 #Preview {
-    PrototypesView()
+        PrototypesView()
 }
 
 #if os(iOS)

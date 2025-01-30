@@ -25,13 +25,11 @@ struct ItemDetailView: View {
     @State private var modalSlideOffset: CGFloat = 600
     let offsetAmount: CGFloat = 600
     
-    @State private var temperature = "250"
-    @State private var cookTime = "00h 00m 00s"
-    
-    @State private var selectedMode: String = "Bake"
-    @State private var cycleCompleteOption = "Hold Temperature"
-    
-    @State private var showingTimerView = false
+    @Binding var temperature: String
+    @Binding  var cookTime: String
+    @Binding  var selectedMode: String
+    @Binding  var cycleCompleteOption: String
+    @State private var isTimerRunning = false
     
     var body: some View {
         NavigationStack{
@@ -43,7 +41,7 @@ struct ItemDetailView: View {
                             Text("Oven Temperature")
                                 .disclaimer()
                             TextField("Temperature", text: $temperature)
-                            
+                                .keyboardType(.numberPad)
                             Divider()
                             Text("Value must be between 170 and 550")
                                 .paragraphExtraSmall()
@@ -103,8 +101,13 @@ struct ItemDetailView: View {
                         .padding(.vertical)
                         .frame(maxWidth: .infinity)
                         
-                        Button {
-                            showingTimerView = true
+                        NavigationLink{
+                            TimerView(
+                                temperature: temperature,
+                                cookTime: cookTime,
+                                mode: selectedMode,
+                                cycleComplete: cycleCompleteOption
+                            )
                         } label: {
                             HStack{
                                 Text("Start")
@@ -118,14 +121,6 @@ struct ItemDetailView: View {
                             .padding()
                             .padding(.bottom)
                             
-                        }
-                        .navigationDestination(isPresented: $showingTimerView) {
-                            TimerView(
-                                temperature: temperature,
-                                cookTime: cookTime,
-                                mode: selectedMode,
-                                cycleComplete: cycleCompleteOption
-                            )
                         }
                         
                     }
@@ -241,8 +236,23 @@ struct ItemDetailView: View {
 }
 
 #Preview {
-        ItemDetailView(item: Item())
+    @Previewable var previewTemp = "350"
+    @Previewable var previewCookTime = "00h 30m 00s"
+    @Previewable var previewMode = "Bake"
+    @Previewable var previewCycleComplete = "Hold Temperature"
+    
+    let previewItem = Item(timestamp: Date())
+    
+    return ItemDetailView(
+        item: previewItem,
+        temperature: .constant("350"),
+        cookTime: .constant("00h 30m 00s"),
+        selectedMode: .constant("Bake"),
+        cycleCompleteOption: .constant("Hold Temperature")
+    )
+    .modelContainer(for: Item.self, inMemory: true)
 }
+
 
 
 /*

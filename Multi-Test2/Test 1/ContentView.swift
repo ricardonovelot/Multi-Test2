@@ -13,95 +13,106 @@ struct ContentView: View {
     @Environment(\.dismiss) private var dismiss
     
     @Query(sort: \Item.timestamp, animation: .smooth) private var items: [Item]
-    @State private var newItem: Item?
+    
+    @State private var washer = Item.washer
+    
+    @State private var temperature = "250"
+    @State private var cookTime = "00h 00m 00s"
+    @State private var selectedMode: String = "Bake"
+    @State private var cycleCompleteOption = "Hold Temperature"
+    
+    @State var isTimerRunning = false
 
     var body: some View {
         TabView {
             NavigationStack{
-                    ScrollView{
-                        VStack(spacing: 40) {
-                            Divider()
-                                .overlay(.gray)
-                                .padding(.horizontal, 24)
-                            
-                            NavigationLink(destination: {
-                                if let item = newItem {
-                                    ItemDetailView(item: item)
-                                        .navigationBarBackButtonHidden()
-                                }
-                            }, label: {
-                                HStack(alignment: .center, spacing: 0){
-                                    Image("hero-KOCE500ESS-3")
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height: 260)
-                                        .offset(x: -20)
-                                        .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
-                                    VStack(alignment: .leading){
-                                        Text("Emmily Appliances")
-                                            .disclaimer()
-                                            .padding(.bottom, 2)
-                                        Text("Washer")
-                                            .font(.system(size: 20, weight: .regular, design: .default))
-                                        Divider()
-                                            .frame(width: 130, height: 1)
-                                            .overlay(.accent)
-                                        Text("Online")
-                                            .padding(.bottom)
-                                        HStack{
-                                            Image(systemName: "batteryblock").rotationEffect(.degrees(180))
-                                                .foregroundStyle(.accent)
-                                            Image(systemName: "play.square")
-                                                .foregroundStyle(.accent)
-                                        }
-                                    }
-                                    .padding()
-                                    Spacer()
-                                }
-                            })
-                            .buttonStyle(PlainButtonStyle())
-                            .simultaneousGesture(TapGesture().onEnded{
-                                let item = Item(timestamp: Date())
-                                modelContext.insert(item)
-                                newItem = item
-                            })
-                            
-                            Divider()
-                                .overlay(.gray)
-                                .padding(.horizontal, 44)
-                            
+                ScrollView{
+                    VStack(spacing: 40) {
+                        Divider()
+                            .overlay(.gray)
+                            .padding(.horizontal, 24)
+                        
+                        
+                        NavigationLink{
+                            ItemDetailView(
+                                item: washer,
+                                temperature: $temperature,
+                                cookTime: $cookTime,
+                                selectedMode: $selectedMode,
+                                cycleCompleteOption: $cycleCompleteOption
+                                //,isTimerRunning: $isTimerRunning
+                            )
+                            .navigationBarBackButtonHidden()
+                        } label: {
                             HStack(alignment: .center, spacing: 0){
-                                
-                                Spacer()
-                                Spacer()
-                                
-                                VStack(alignment: .trailing){
+                                Image("hero-KOCE500ESS-3")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 260)
+                                    .offset(x: -20)
+                                    .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
+                                VStack(alignment: .leading){
                                     Text("Emmily Appliances")
                                         .disclaimer()
                                         .padding(.bottom, 2)
-                                    Text("Wall Oven")
-                                        .paragraphMedium()
+                                    Text(washer.title ?? "")
+                                        .font(.system(size: 20, weight: .regular, design: .default))
                                     Divider()
                                         .frame(width: 130, height: 1)
                                         .overlay(.accent)
-                                    Text("Ready to Cook")
+                                    Text("Online")
                                         .padding(.bottom)
                                     HStack{
+                                        Image(systemName: "batteryblock").rotationEffect(.degrees(180))
+                                            .foregroundStyle(.accent)
                                         Image(systemName: "play.square")
                                             .foregroundStyle(.accent)
                                     }
                                 }
-                                
-                                Image("hero-KOCE500ESS-1")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 200)
-                                    .offset(x: 30)
-                                    .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
-                                
+                                .padding()
+                                Spacer()
                             }
                         }
+                        
+                        
+                        
+                        
+                        Divider()
+                            .overlay(.gray)
+                            .padding(.horizontal, 44)
+                        
+                        HStack(alignment: .center, spacing: 0){
+                            
+                            Spacer()
+                            Spacer()
+                            
+                            VStack(alignment: .trailing){
+                                Text("Emmily Appliances")
+                                    .disclaimer()
+                                    .padding(.bottom, 2)
+                                Text("Wall Oven")
+                                    .paragraphMedium()
+                                Divider()
+                                    .frame(width: 130, height: 1)
+                                    .overlay(.accent)
+                                Text("Ready to Cook")
+                                    .padding(.bottom)
+                                HStack{
+                                    Image(systemName: "play.square")
+                                        .foregroundStyle(.accent)
+                                }
+                            }
+                            
+                            Image("hero-KOCE500ESS-1")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 200)
+                                .offset(x: 30)
+                                .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
+                            
+                        }
                     }
+                }
                 
                 .safeAreaInset(edge: .top) {
                     VStack{
@@ -129,37 +140,39 @@ struct ContentView: View {
                     .background(.white)
                 }
             }
-            .tabItem {
-                Label("APPLIANCES", systemImage: "house")
-                    .buttonStyle(.plain)
-            }
-            
-            Text("Title")
-            .tabItem {
-                    Label("SETTINGS", systemImage: "gearshape")
-            }
                 
+                .tabItem {
+                    Label("APPLIANCES", systemImage: "house")
+                        .buttonStyle(.plain)
+                }
+                
+                Text("Title")
+                    .tabItem {
+                        Label("SETTINGS", systemImage: "gearshape")
+                    }
+                
+                
+                //        NavigationStack {
+                //            List {
+                //                ForEach(items) { item in
+                //                    NavigationLink {
+                //                        ItemDetailView(item: item)
+                //                    } label:{
+                //                        Text(item.title ?? "")
+                //                    }
+                //                }
+                //                .onDelete(perform: deleteItems)
+                //            }
+                //            .navigationTitle("My Appliances")
+                //            .toolbar {
+                //                ToolbarItem {
+                //                    Button(action: addItem) {
+                //                        Label("Add Item", systemImage: "plus")
+                //                    }
+                //                }
+                //            }
+                //        }
             
-            //        NavigationStack {
-            //            List {
-            //                ForEach(items) { item in
-            //                    NavigationLink {
-            //                        ItemDetailView(item: item)
-            //                    } label:{
-            //                        Text(item.title ?? "")
-            //                    }
-            //                }
-            //                .onDelete(perform: deleteItems)
-            //            }
-            //            .navigationTitle("My Appliances")
-            //            .toolbar {
-            //                ToolbarItem {
-            //                    Button(action: addItem) {
-            //                        Label("Add Item", systemImage: "plus")
-            //                    }
-            //                }
-            //            }
-            //        }
         }
         
     }

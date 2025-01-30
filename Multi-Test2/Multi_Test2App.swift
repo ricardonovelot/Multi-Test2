@@ -118,12 +118,14 @@ struct Multi_Test2App: App {
     var body: some Scene {
         WindowGroup {
             #if os(iOS)
-            PrototypesView()
-                .alert("Error", isPresented: $showError) {
-                    Button("OK", role: .cancel) { }
-                } message: {
-                    Text(errorMessage)
-                }
+            NavigationStack {
+                PrototypesView()
+                    .alert("Error", isPresented: $showError) {
+                        Button("OK", role: .cancel) { }
+                    } message: {
+                        Text(errorMessage)
+                    }
+            }
             #else
             DevicesList()
             #endif

@@ -11,6 +11,12 @@ import SwiftData
 struct ContentView2: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
+    @State private var newItem: Item?
+    
+    @State private var temperature = "250"
+    @State private var cookTime = "00h 00m 00s"
+    @State private var selectedMode: String = "Bake"
+    @State private var cycleCompleteOption = "Hold Temperature"
 
     var body: some View {
         NavigationStack{
@@ -26,7 +32,16 @@ struct ContentView2: View {
                 VStack(spacing: 50) {
                     
                     NavigationLink {
-                        ItemDetailView(item: Item())
+                        if let item = newItem {
+                            ItemDetailView(
+                                item: item,
+                                temperature: $temperature,
+                                cookTime: $cookTime,
+                                selectedMode: $selectedMode,
+                                cycleCompleteOption: $cycleCompleteOption
+                            )
+                            .navigationBarBackButtonHidden()
+                        }
                     } label: {
                         HStack(alignment: .center, spacing: 0){
                             Image("hero-KOCE500ESS-3")

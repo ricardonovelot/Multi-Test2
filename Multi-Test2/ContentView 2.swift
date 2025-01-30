@@ -8,9 +8,8 @@
 import SwiftUI
 import SwiftData
 
-struct ContentView: View {
+struct ContentView2: View {
     @Environment(\.modelContext) private var modelContext
-    
     @Query private var items: [Item]
 
     var body: some View {
@@ -24,10 +23,10 @@ struct ContentView: View {
                     }
                     .padding(.bottom, 32)
                 
-                VStack(spacing: 40) {
+                VStack(spacing: 50) {
                     
                     NavigationLink {
-                        Dishwasher()
+                        ItemDetailView(item: Item())
                     } label: {
                         HStack(alignment: .center, spacing: 0){
                             Image("hero-KOCE500ESS-3")
@@ -42,14 +41,10 @@ struct ContentView: View {
                                 Divider()
                                     .frame(width: 130, height: 1)
                                     .overlay(.accent)
-                                Text("Running")
+                                Text("O N L I N E")
+                                    .textCase(.uppercase)
                                     .padding(.bottom)
-                                HStack{
-                                    Image(systemName: "batteryblock").rotationEffect(.degrees(180))
-                                        .foregroundStyle(.accent)
-                                    Image(systemName: "play.square")
-                                        .foregroundStyle(.accent)
-                                }
+                                    .foregroundStyle(.gray)
                             }
                             .padding()
                             Spacer()
@@ -60,36 +55,31 @@ struct ContentView: View {
                     
                     HStack(alignment: .center, spacing: 0){
                         
-                        Spacer()
-                        Spacer()
+                        Image("hero-KOCE500ESS-1")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width:200)
+                            .offset(x: -50)
+                            .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
                         
-                        VStack(alignment: .trailing){
+                        VStack(alignment: .leading){
                             Text("Wall Oven")
                                 .font(.system(size: 20, weight: .regular, design: .default))
                             Divider()
                                 .frame(width: 130, height: 1)
                                 .overlay(.accent)
-                            Text("Ready to Cook")
+                            Text("R e a d y  t o  C o o k")
+                                .textCase(.uppercase)
                                 .padding(.bottom)
-                            HStack{
-                                Image(systemName: "play.square")
-                                    .foregroundStyle(.accent)
-                            }
+                                .foregroundStyle(.gray)
                         }
+                        .offset(x: -23)
                         
-                        Image("hero-KOCE500ESS-1")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200)
-                            .offset(x: 30)
-                            .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
-                        
+                        Spacer()
                         
                     }
                 }
-               
             }
-            .contentMargins(.top, -40)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     HStack{
@@ -107,80 +97,11 @@ struct ContentView: View {
                 }
             }
         }
-        
-
-//        NavigationStack {
-//            List {
-//                ForEach(items) { item in
-//                    NavigationLink {
-//                        ItemDetailView(item: item)
-//                    } label:{
-//                        Text(item.title ?? "")
-//                    }
-//                }
-//                .onDelete(perform: deleteItems)
-//            }
-//            .navigationTitle("My Appliances")
-//            .toolbar {
-//                ToolbarItem {
-//                    Button(action: addItem) {
-//                        Label("Add Item", systemImage: "plus")
-//                    }
-//                }
-//            }
-//        }
-    }
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-            try? modelContext.save()
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-            try? modelContext.save()
-        }
     }
 }
 
-struct ItemDetailView: View {
-    @Environment(\.modelContext) private var modelContext
-    
-    @Bindable var item: Item
-    
-    var body: some View {
-        TextField("Title", text: $item.title ?? "",prompt: Text("Title"))
-            .onChange(of: item.title) {
-                item.timestamp = .now
-                try? modelContext.save()
-            }
-        Toggle("Power", isOn: $item.isOn ?? false)
-            .onChange(of: item.isOn) {
-                // First save
-                try? modelContext.save()
-                
-                // Second save after a brief delay to ensure sync
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    try? modelContext.save()
-                }
-            }
-        
-    }
-}
-
-func ??<T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
-    Binding(
-        get: { lhs.wrappedValue ?? rhs },
-        set: { lhs.wrappedValue = $0 }
-    )
-}
 
 #Preview {
-    ContentView()
+    ContentView2()
         .modelContainer(for: Item.self, inMemory: true)
 }

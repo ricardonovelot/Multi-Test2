@@ -10,126 +10,160 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     
-    @Query private var items: [Item]
+    @Query(sort: \Item.timestamp, animation: .smooth) private var items: [Item]
+    @State private var newItem: Item?
 
     var body: some View {
-        NavigationStack{
-            ScrollView{
-                    HStack{
-                        Text("My Devices")
-                            .font(.system(size: 38, weight: .semibold, design: .default))
-                            .padding(.leading)
-                        Spacer()
-                    }
-                    .padding(.bottom, 32)
-                
-                VStack(spacing: 40) {
-                    
-                    NavigationLink {
-                        ItemDetailView(item: Item())
-                    } label: {
-                        HStack(alignment: .center, spacing: 0){
-                            Image("hero-KOCE500ESS-3")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(height: 260)
-                                .offset(x: -20)
-                                .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
-                            VStack(alignment: .leading){
-                                Text("Washer")
-                                    .font(.system(size: 20, weight: .regular, design: .default))
-                                Divider()
-                                    .frame(width: 130, height: 1)
-                                    .overlay(.accent)
-                                Text("Running")
-                                    .padding(.bottom)
-                                HStack{
-                                    Image(systemName: "batteryblock").rotationEffect(.degrees(180))
-                                        .foregroundStyle(.accent)
-                                    Image(systemName: "play.square")
-                                        .foregroundStyle(.accent)
+        TabView {
+            NavigationStack{
+                    ScrollView{
+                        VStack(spacing: 40) {
+                            Divider()
+                                .overlay(.gray)
+                                .padding(.horizontal, 24)
+                            
+                            NavigationLink(destination: {
+                                if let item = newItem {
+                                    ItemDetailView(item: item)
+                                        .navigationBarBackButtonHidden()
                                 }
+                            }, label: {
+                                HStack(alignment: .center, spacing: 0){
+                                    Image("hero-KOCE500ESS-3")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(height: 260)
+                                        .offset(x: -20)
+                                        .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
+                                    VStack(alignment: .leading){
+                                        Text("Emmily Appliances")
+                                            .disclaimer()
+                                            .padding(.bottom, 2)
+                                        Text("Washer")
+                                            .font(.system(size: 20, weight: .regular, design: .default))
+                                        Divider()
+                                            .frame(width: 130, height: 1)
+                                            .overlay(.accent)
+                                        Text("Online")
+                                            .padding(.bottom)
+                                        HStack{
+                                            Image(systemName: "batteryblock").rotationEffect(.degrees(180))
+                                                .foregroundStyle(.accent)
+                                            Image(systemName: "play.square")
+                                                .foregroundStyle(.accent)
+                                        }
+                                    }
+                                    .padding()
+                                    Spacer()
+                                }
+                            })
+                            .buttonStyle(PlainButtonStyle())
+                            .simultaneousGesture(TapGesture().onEnded{
+                                let item = Item(timestamp: Date())
+                                modelContext.insert(item)
+                                newItem = item
+                            })
+                            
+                            Divider()
+                                .overlay(.gray)
+                                .padding(.horizontal, 44)
+                            
+                            HStack(alignment: .center, spacing: 0){
+                                
+                                Spacer()
+                                Spacer()
+                                
+                                VStack(alignment: .trailing){
+                                    Text("Emmily Appliances")
+                                        .disclaimer()
+                                        .padding(.bottom, 2)
+                                    Text("Wall Oven")
+                                        .paragraphMedium()
+                                    Divider()
+                                        .frame(width: 130, height: 1)
+                                        .overlay(.accent)
+                                    Text("Ready to Cook")
+                                        .padding(.bottom)
+                                    HStack{
+                                        Image(systemName: "play.square")
+                                            .foregroundStyle(.accent)
+                                    }
+                                }
+                                
+                                Image("hero-KOCE500ESS-1")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 200)
+                                    .offset(x: 30)
+                                    .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
+                                
                             }
-                            .padding()
+                        }
+                    }
+                
+                .safeAreaInset(edge: .top) {
+                    VStack{
+                        HStack{
+                            Text("ApplianceHub")
+                                .font(.system(size: 24, weight: .bold, design: .rounded))
+                                .foregroundStyle(Color(.accent))
+                            Spacer()
+                            
+                            Image(systemName: "plus")
+                                .font(.system(size: 28, weight: .light, design: .rounded))
+                                .foregroundStyle(Color(.accent))
+                                .padding(.trailing)
+                        }
+                        .padding(.bottom, 24)
+                        HStack{
+                            Text("My Devices")
+                                .h2()
+                                .font(.system(size: 32, weight: .semibold, design: .default))
                             Spacer()
                         }
+                        .padding(.bottom, 8)
                     }
-                    .buttonStyle(PlainButtonStyle())
-
-                    
-                    HStack(alignment: .center, spacing: 0){
-                        
-                        Spacer()
-                        Spacer()
-                        
-                        VStack(alignment: .trailing){
-                            Text("Wall Oven")
-                                .font(.system(size: 20, weight: .regular, design: .default))
-                            Divider()
-                                .frame(width: 130, height: 1)
-                                .overlay(.accent)
-                            Text("Ready to Cook")
-                                .padding(.bottom)
-                            HStack{
-                                Image(systemName: "play.square")
-                                    .foregroundStyle(.accent)
-                            }
-                        }
-                        
-                        Image("hero-KOCE500ESS-1")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200)
-                            .offset(x: 30)
-                            .shadow(color: Color.gray.opacity(0.14), radius: 17, x: 0, y: 9)
-                        
-                        
-                    }
-                }
-               
-            }
-            .contentMargins(.top, -40)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    HStack{
-                        Image("Logo")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 200)
-                        Spacer()
-                    }
-                }
-                ToolbarItem{
-                    Image(systemName: "plus")
-                        .font(.title)
-                        .padding(.trailing)
+                    .padding(.leading, 22)
+                    .background(.white)
                 }
             }
+            .tabItem {
+                Label("APPLIANCES", systemImage: "house")
+                    .buttonStyle(.plain)
+            }
+            
+            Text("Title")
+            .tabItem {
+                    Label("SETTINGS", systemImage: "gearshape")
+            }
+                
+            
+            //        NavigationStack {
+            //            List {
+            //                ForEach(items) { item in
+            //                    NavigationLink {
+            //                        ItemDetailView(item: item)
+            //                    } label:{
+            //                        Text(item.title ?? "")
+            //                    }
+            //                }
+            //                .onDelete(perform: deleteItems)
+            //            }
+            //            .navigationTitle("My Appliances")
+            //            .toolbar {
+            //                ToolbarItem {
+            //                    Button(action: addItem) {
+            //                        Label("Add Item", systemImage: "plus")
+            //                    }
+            //                }
+            //            }
+            //        }
         }
         
-
-//        NavigationStack {
-//            List {
-//                ForEach(items) { item in
-//                    NavigationLink {
-//                        ItemDetailView(item: item)
-//                    } label:{
-//                        Text(item.title ?? "")
-//                    }
-//                }
-//                .onDelete(perform: deleteItems)
-//            }
-//            .navigationTitle("My Appliances")
-//            .toolbar {
-//                ToolbarItem {
-//                    Button(action: addItem) {
-//                        Label("Add Item", systemImage: "plus")
-//                    }
-//                }
-//            }
-//        }
     }
+    
     private func addItem() {
         withAnimation {
             let newItem = Item(timestamp: Date())
@@ -137,7 +171,7 @@ struct ContentView: View {
             try? modelContext.save()
         }
     }
-
+    
     private func deleteItems(offsets: IndexSet) {
         withAnimation {
             for index in offsets {
@@ -146,9 +180,34 @@ struct ContentView: View {
             try? modelContext.save()
         }
     }
+    
 }
 
+struct AsyncContentView<Content: View>: View {
+    let content: () -> Content
+    @State private var isLoading = true
 
+    init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
+    }
+
+    var body: some View {
+        ZStack {
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(.circular)
+            } else {
+                content()
+            }
+        }
+        .onAppear {
+            // Delay loading by a fraction of a second to avoid UI blocking
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                isLoading = false
+            }
+        }
+    }
+}
 
 func ??<T>(lhs: Binding<Optional<T>>, rhs: T) -> Binding<T> {
     Binding(

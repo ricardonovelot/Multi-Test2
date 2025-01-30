@@ -16,27 +16,82 @@ struct Multi_Test2App: App {
     let container: ModelContainer
     let cloudKitContainer = CKContainer(identifier: "iCloud.com.ricardonovelo.Multi-Test2")
     
+    // Add state object to track errors
+    @State private var showError = false
+    @State private var errorMessage = ""
+    
     init() {
         do {
             // Configure SwiftData with CloudKit settings
+            // Ensure CloudKit container is properly configured for production
             let config = ModelConfiguration(
-                allowsSave: true, cloudKitDatabase: .automatic
+                allowsSave: true,
+                cloudKitDatabase: .automatic
             )
-            container = try ModelContainer(for: Item.self, configurations: config)
+            
+            // Initialize container
+            container = try ModelContainer(
+                for: Item.self,
+                configurations: config
+            )
+            
+            // Clean and reload sample data after container initialization
+            let context = container.mainContext
+            Item.reloadSampleData(modelContext: context)
             
             // Setup notifications when app launches
             setupNotifications()
             
         } catch {
-            fatalError("Could not initialize ModelContainer: \(error)")
+            // Handle SwiftData errors
+            if let swiftDataError = error as? SwiftDataError {
+                fatalError("SwiftData error: \(swiftDataError.localizedDescription)")
+            } else {
+                fatalError("Could not initialize ModelContainer: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // MARK: - Error Handling
+    private func handleError(_ error: Error, operation: String) {
+        let errorMessage: String
+        
+        if let cloudError = error as? CKError {
+            switch cloudError.code {
+            case .networkFailure, .networkUnavailable:
+                errorMessage = "Network connection is unavailable. Please check your internet connection."
+            case .notAuthenticated:
+                errorMessage = "Please sign in to iCloud to use sync features."
+            case .quotaExceeded:
+                errorMessage = "iCloud storage quota exceeded."
+            default:
+                errorMessage = "CloudKit error: \(cloudError.localizedDescription)"
+            }
+        } else {
+            errorMessage = "\(operation) failed: \(error.localizedDescription)"
+        }
+        
+        DispatchQueue.main.async {
+            self.errorMessage = errorMessage
+            self.showError = true
         }
     }
     
     // MARK: - Notification Setup
     private func setupNotifications() {
         // Request notification permissions
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-            guard granted else { return }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                self.handleError(error, operation: "Notification permission request")
+                return
+            }
+            
+            guard granted else {
+                self.handleError(NSError(domain: "", code: -1,
+                    userInfo: [NSLocalizedDescriptionKey: "Notification permissions were denied"]),
+                    operation: "Notification setup")
+                return
+            }
             
             // Setup CloudKit subscription on main queue
             DispatchQueue.main.async {
@@ -45,7 +100,6 @@ struct Multi_Test2App: App {
                 notificationInfo.shouldSendContentAvailable = true
                 subscription.notificationInfo = notificationInfo
                 
-                // Save subscription using singleton container
                 let operation = CKModifySubscriptionsOperation(
                     subscriptionsToSave: [subscription],
                     subscriptionIDsToDelete: nil
@@ -53,18 +107,26 @@ struct Multi_Test2App: App {
                 operation.qualityOfService = .utility
                 operation.modifySubscriptionsCompletionBlock = { _, _, error in
                     if let error = error {
-                        print("Failed to save subscription: \(error)")
+                        self.handleError(error, operation: "CloudKit subscription setup")
                     }
                 }
-                CKContainer(identifier: "iCloud.com.ricardonovelo.Multi-Test2")
-                    .privateCloudDatabase.add(operation)
+                self.cloudKitContainer.privateCloudDatabase.add(operation)
             }
         }
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            #if os(iOS)
+            PrototypesView()
+                .alert("Error", isPresented: $showError) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text(errorMessage)
+                }
+            #else
+            DevicesList()
+            #endif
         }
         .modelContainer(container)
     }

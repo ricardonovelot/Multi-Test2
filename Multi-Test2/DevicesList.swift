@@ -6,10 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct DevicesList: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query private var items: [Item]
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationStack {
+            List {
+                ForEach(items) { item in
+                    NavigationLink {
+                        HMI(device: item)
+                    } label:{
+                        Text(item.title ?? "")
+                    }
+                }
+            }
+            .navigationTitle("Devices HQ")
+        }
     }
 }
 
